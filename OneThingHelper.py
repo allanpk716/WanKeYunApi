@@ -21,7 +21,7 @@ defaultPath = "/onecloud/tddownload"
 #            "name": filename,      这个名称最好是对应的，因为后面下载会以这个来命名
 #            "url" : url,
 #       }
-def AddDownloadTask(userPhone, userPwd, deviceid_phone, imeiId, JobList, defaultPath, IsFilmFile = True):
+def AddDownloadTask(userPhone, userPwd, deviceid_phone, imeiId, JobList, defaultPath, IsBtFile = False):
     # 登录
     bok, sessionid, userid = APIHelper_OneThing.Login(userPhone, userPwd, deviceid_phone, imeiId)
     if bok == False:
@@ -67,7 +67,7 @@ def AddDownloadTask(userPhone, userPwd, deviceid_phone, imeiId, JobList, default
 
     confirmJobList = []
     # 可以下载其他东西
-    if IsFilmFile == True:
+    if IsBtFile == True:
         # 经过验证，重新构建一个有效的下载队列
         
         for oneJob in JobList:

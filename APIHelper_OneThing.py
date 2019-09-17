@@ -90,14 +90,15 @@ def ListPeer(sessionid, userid):
             'cache-control': "no-cache"
         }
         body = {
+            'X-LICENCE-PUB' : '1',
             "appversion" : appVersion,
-            'ct' : '1',
-            'v' : '1',
+            'ct' : '2',
+            'v' : '3',
         }
         sign, nouse = GetSign(body, sessionid)
-        nowUrl = apiControlUrl + '/listPeer?appversion={appVersion}&ct=1&v=1&sign={sign}'.format(appVersion=appVersion, sign=sign)
+        nowUrl = apiControlUrl + '/listPeer?X-LICENCE-PUB=1&appversion={appVersion}&ct=2&v=3&sign={sign}'.format(appVersion=appVersion, sign=sign)
         cookies = dict(sessionid=sessionid, userid=userid)
-        r = requests.get(url=nowUrl, headers=nowHeader, cookies=cookies, timeout=10)
+        r = requests.get(url=nowUrl, headers=nowHeader, cookies=cookies, timeout=MytimeOut)
         if r.ok == False:
             return False, r.reason
         tmpJson = r.json()

@@ -8,7 +8,7 @@ import ipaddress
 appVersion = "1.6.2"
 apiAccountUrl = "https://account.onethingpcs.com"
 apiControlUrl = "https://control.onethingpcs.com"
-apiRemoteDlUrl = "http://control-remotedl.onethingpcs.com"
+apiRemoteDlUrl = "https://control-remotedl.onethingpcs.com"
 
 # MD5函数
 def md5(s):

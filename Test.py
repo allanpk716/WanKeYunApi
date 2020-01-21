@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 import WanKeYunApi
+from LogHelper import LogHelper
 
 def main():
-    onething = WanKeYunApi.WanKeYunApi()
-    bok = onething.LoginEx(user="你的账号",passwd="你的密码")
+    logger = LogHelper('ZiMuZuHelper', cmdLevel='INFO', fileLevel="DEBUG").logger
+    onething = WanKeYunApi.WanKeYunApi(logger)
+    bok = onething.LoginEx(user="1361234567",passwd="1234567890")
     if bok is False:
         return
     bok = onething.GetUSBInfo()

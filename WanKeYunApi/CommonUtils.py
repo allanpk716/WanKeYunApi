@@ -7,8 +7,8 @@ import json
 import codecs
 import requests
 
-userInfoFileName = 'userInfo.json'
-cookieFileName = "cookies.txt"
+userInfoFileName = 'userInfo_WanKeYun.json'
+cookieFileName = "cookies_WanKeYun.txt"
 
 # MD5函数
 def md5(s):

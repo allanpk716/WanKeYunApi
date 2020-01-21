@@ -5,7 +5,7 @@ from urllib.parse import urljoin
 
 import requests
 
-from . import Config, CommonUtils, LogHelper
+from . import Config, CommonUtils
 
 requests.packages.urllib3.disable_warnings()
 
@@ -13,7 +13,7 @@ class WanKeYunApi:
     requestSession = requests.session()
     user_info = {}
 
-    def __init__(self, defPath="/onecloud/tddownload"):
+    def __init__(self, ilogger, defPath="/onecloud/tddownload"):
         self.nowIP = CommonUtils.rip()
         self.defaultPath = defPath
         self.requestSession.headers = {
@@ -21,6 +21,7 @@ class WanKeYunApi:
             'Proxy-Client-IP' : self.nowIP,
             "cache-control": "no-cache"
         }
+        self.logger = ilogger
     
     def SaveUserInfo(self):
         CommonUtils.SaveUserInfo(self.user_info)
@@ -55,17 +56,17 @@ class WanKeYunApi:
         self.ReCacheInfo()
         # 尝试读取一次 Peer 信息，如果失败，那么就重新登陆
         if self.ListPeer() is False:
-            LogHelper.logger.info("Need ReLogin.")
+            self.logger.info("Need ReLogin.")
             if self.Login(user, passwd) is False:
                 return False
 
             if self.ListPeer() is True:
                 return True
             else:
-                LogHelper.logger.info("LoginEx Error.")
+                self.logger.info("LoginEx Error.")
                 return False
         
-        LogHelper.logger.info("Login From Cache Info Succeed.")
+        self.logger.info("Login From Cache Info Succeed.")
         return True
     
     # 登陆
@@ -87,14 +88,14 @@ class WanKeYunApi:
                     self.user_info["userid"] = self.requestSession.cookies.get("userid")
                     self.SaveCookie(result)
                     self.SaveUserInfo()
-                    LogHelper.logger.info("Login Succeed.")
+                    self.logger.info("Login Succeed.")
                     return True
                 else:
-                    LogHelper.logger.info("Login Failed iRet != 0 : {0}".format(result.text))
+                    self.logger.info("Login Failed iRet != 0 : {0}".format(result.text))
             else:
-                LogHelper.logger.info("Login Failed status_code : {0} -- {1}".format(result.status_code, result.reason))
+                self.logger.info("Login Failed status_code : {0} -- {1}".format(result.status_code, result.reason))
         except Exception as error:
-            LogHelper.logger.error("Login: {0}".format(error))
+            self.logger.error("Login: {0}".format(error))
         return False
     
     def ListPeer(self):
@@ -117,14 +118,14 @@ class WanKeYunApi:
                     self.user_info["all_peer_info"] = temp.get("result")[1]
                     self.SaveCookie(result)
                     self.SaveUserInfo()
-                    LogHelper.logger.info("ListPeer Succeed.")
+                    self.logger.info("ListPeer Succeed.")
                     return True
                 else:
-                    LogHelper.logger.info("ListPeer Failed rtn != 0 : {0}".format(result.text))
+                    self.logger.info("ListPeer Failed rtn != 0 : {0}".format(result.text))
             else:
-                LogHelper.logger.info("ListPeer Failed status_code : {0} -- {1}".format(result.status_code, result.reason))
+                self.logger.info("ListPeer Failed status_code : {0} -- {1}".format(result.status_code, result.reason))
         except Exception as error:
-            LogHelper.logger.error("ListPeer: {0}".format(error))
+            self.logger.error("ListPeer: {0}".format(error))
         return False
     
     # 获取所有端的设备信息
@@ -136,7 +137,7 @@ class WanKeYunApi:
                 if len(temp) > nums and nums >=0:
                     return temp[nums]
         except Exception as error:
-            LogHelper.logger.error("Get_PeerInfo : {0}".format(error))
+            self.logger.error("Get_PeerInfo : {0}".format(error))
         return False
     
     # 获取任一对端的ID
@@ -148,7 +149,7 @@ class WanKeYunApi:
                 if len(temp) > nums and nums >=0:
                     return temp[nums].get("peerid")
         except Exception as error:
-            LogHelper.logger.error("Get_PeerID : {0}".format(error))
+            self.logger.error("Get_PeerID : {0}".format(error))
         return False
     
     # 获取任一对端的设备ID
@@ -160,7 +161,7 @@ class WanKeYunApi:
                 if len(temp) > nums and nums >=0:
                     return temp[nums].get("device_id")
         except Exception as error:
-            LogHelper.logger.error("Get_PeerDeviceID: {0}".format(error))
+            self.logger.error("Get_PeerDeviceID: {0}".format(error))
         return False
     
     # 获取硬盘信息
@@ -184,14 +185,14 @@ class WanKeYunApi:
                     self.user_info["usb_info"] = temp.get("result")
                     self.SaveCookie(result)
                     self.SaveUserInfo()
-                    LogHelper.logger.info("GetUSBInfo Succeed.")
+                    self.logger.info("GetUSBInfo Succeed.")
                     return True
                 else:
-                    LogHelper.logger.info("GetUSBInfo Failed rtn != 0 : {0}".format(result.text))
+                    self.logger.info("GetUSBInfo Failed rtn != 0 : {0}".format(result.text))
             else:
-                LogHelper.logger.info("GetUSBInfo Failed status_code : {0} -- {1}".format(result.status_code, result.reason))
+                self.logger.info("GetUSBInfo Failed status_code : {0} -- {1}".format(result.status_code, result.reason))
         except Exception as error:
-            LogHelper.logger.error("GetUSBInfo: {0}".format(error))
+            self.logger.error("GetUSBInfo: {0}".format(error))
         return False
 
     # 远程下载登陆
@@ -213,14 +214,14 @@ class WanKeYunApi:
                     self.user_info["remote_download_login"] = temp
                     self.SaveCookie(result)
                     self.SaveUserInfo()
-                    LogHelper.logger.info("RemoteDlLogin Succeed.")
+                    self.logger.info("RemoteDlLogin Succeed.")
                     return True
                 else:
-                    LogHelper.logger.info("RemoteDlLogin Failed rtn != 0 : {0}".format(result.text))
+                    self.logger.info("RemoteDlLogin Failed rtn != 0 : {0}".format(result.text))
             else:
-                LogHelper.logger.info("RemoteDlLogin Failed status_code : {0} -- {1}".format(result.status_code, result.reason))
+                self.logger.info("RemoteDlLogin Failed status_code : {0} -- {1}".format(result.status_code, result.reason))
         except Exception as error:
-            LogHelper.logger.error("RemoteDlLogin:{0}".format(error))
+            self.logger.error("RemoteDlLogin:{0}".format(error))
         return False
 
     # 获取对端远程下载列表
@@ -247,14 +248,14 @@ class WanKeYunApi:
                     self.user_info["remote_download_list"] = temp
                     self.SaveCookie(result)
                     self.SaveUserInfo()
-                    LogHelper.logger.info("GetRemoteDlInfo Succeed.")
+                    self.logger.info("GetRemoteDlInfo Succeed.")
                     return True
                 else:
-                    LogHelper.logger.info("GetRemoteDlInfo Failed rtn != 0 : {0}".format(result.text))
+                    self.logger.info("GetRemoteDlInfo Failed rtn != 0 : {0}".format(result.text))
             else:
-                LogHelper.logger.info("GetRemoteDlInfo Failed status_code : {0} -- {1}".format(result.status_code, result.reason))
+                self.logger.info("GetRemoteDlInfo Failed status_code : {0} -- {1}".format(result.status_code, result.reason))
         except Exception as error:
-            LogHelper.logger.error("GetRemoteDlInfo:{0}".format(error))
+            self.logger.error("GetRemoteDlInfo:{0}".format(error))
         return False
 
     # 解析下载地址
@@ -269,14 +270,14 @@ class WanKeYunApi:
             if result.status_code == 200:
                 temp = result.json()
                 if temp.get("rtn") == 0:
-                    LogHelper.logger.info("UrlResolve Succeed.")
+                    self.logger.info("UrlResolve Succeed.")
                     return True, temp
                 else:
-                    LogHelper.logger.info("UrlResolve Failed rtn != 0 : {0}".format(result.text))
+                    self.logger.info("UrlResolve Failed rtn != 0 : {0}".format(result.text))
             else:
-                LogHelper.logger.info("UrlResolve Failed status_code : {0} -- {1}".format(result.status_code, result.reason))
+                self.logger.info("UrlResolve Failed status_code : {0} -- {1}".format(result.status_code, result.reason))
         except Exception as error:
-            LogHelper.logger.error("UrlResolve: {0}".format(error))
+            self.logger.error("UrlResolve: {0}".format(error))
         return False, None
 
     #-------------------------------------------------------------------------------------
@@ -309,14 +310,14 @@ class WanKeYunApi:
                 if tempJson.get("rtn") == 0:
                     self.SaveCookie(result)
                     self.SaveUserInfo()
-                    LogHelper.logger.info("CreateTask Succeed.")
+                    self.logger.info("CreateTask Succeed.")
                     return True, tempJson
                 else:
-                    LogHelper.logger.info("CreateTask Failed rtn != 0 : {0}".format(result.text))
+                    self.logger.info("CreateTask Failed rtn != 0 : {0}".format(result.text))
             else:
-                LogHelper.logger.info("CreateTask Failed status_code : {0} -- {1}".format(result.status_code, result.reason))
+                self.logger.info("CreateTask Failed status_code : {0} -- {1}".format(result.status_code, result.reason))
         except Exception as error:
-            LogHelper.logger.error("CreateTask:{0}".format(error))
+            self.logger.error("CreateTask:{0}".format(error))
         return False, None
 
     # 恢复任务下载
@@ -332,14 +333,14 @@ class WanKeYunApi:
             if result.status_code == 200:
                 temp = result.json()
                 if temp.get("rtn") == 0:
-                    LogHelper.logger.info("StartRemoteDl Succeed.")
+                    self.logger.info("StartRemoteDl Succeed.")
                     return True, temp
                 else:
-                    LogHelper.logger.info("StartRemoteDl Failed rtn != 0 : {0}".format(result.text))
+                    self.logger.info("StartRemoteDl Failed rtn != 0 : {0}".format(result.text))
             else:
-                LogHelper.logger.info("StartRemoteDl Failed status_code : {0} -- {1}".format(result.status_code, result.reason))
+                self.logger.info("StartRemoteDl Failed status_code : {0} -- {1}".format(result.status_code, result.reason))
         except Exception as error:
-            LogHelper.logger.error("StartRemoteDl: {0}".format(error))
+            self.logger.error("StartRemoteDl: {0}".format(error))
         return False, None
 
     # 暂停任务下载
@@ -355,14 +356,14 @@ class WanKeYunApi:
             if result.status_code == 200:
                 temp = result.json()
                 if temp.get("rtn") == 0:
-                    LogHelper.logger.info("PauseRemoteDl Succeed.")
+                    self.logger.info("PauseRemoteDl Succeed.")
                     return True, temp
                 else:
-                    LogHelper.logger.info("PauseRemoteDl Failed rtn != 0 : {0}".format(result.text))
+                    self.logger.info("PauseRemoteDl Failed rtn != 0 : {0}".format(result.text))
             else:
-                LogHelper.logger.info("PauseRemoteDl Failed status_code : {0} -- {1}".format(result.status_code, result.reason))
+                self.logger.info("PauseRemoteDl Failed status_code : {0} -- {1}".format(result.status_code, result.reason))
         except Exception as error:
-            LogHelper.logger.error("PauseRemoteDl: {0}".format(error))
+            self.logger.error("PauseRemoteDl: {0}".format(error))
         return False, None
 
     # 暂停任务下载
@@ -378,14 +379,14 @@ class WanKeYunApi:
             if result.status_code == 200:
                 temp = result.json()
                 if temp.get("rtn") == 0:
-                    LogHelper.logger.info("PauseRemoteDl Succeed.")
+                    self.logger.info("PauseRemoteDl Succeed.")
                     return True, temp
                 else:
-                    LogHelper.logger.info("DelRemoteDl Failed rtn != 0 : {0}".format(result.text))
+                    self.logger.info("DelRemoteDl Failed rtn != 0 : {0}".format(result.text))
             else:
-                LogHelper.logger.info("DelRemoteDl Failed status_code : {0} -- {1}".format(result.status_code, result.reason))
+                self.logger.info("DelRemoteDl Failed status_code : {0} -- {1}".format(result.status_code, result.reason))
         except Exception as error:
-            LogHelper.logger.error("DelRemoteDl: {0}".format(error))
+            self.logger.error("DelRemoteDl: {0}".format(error))
         return False, None
     
     #-------------------------------------------------------------------------------------
@@ -409,7 +410,7 @@ class WanKeYunApi:
             # 剩余
             free2Use = int(capacity) - int(used)
             if free2Use <= 0:
-                LogHelper.logger.warn("AddDownloadTasks: Disk {0} is Full".format(partitionId))
+                self.logger.warn("AddDownloadTasks: Disk {0} is Full".format(partitionId))
                 return False
             # 当玩客云关机再开机的时候，需要恢复为下载完成的任务，也可以操作暂停正在下载的任务
             # 查询下载的任务列表，下载完毕的也在内，需要过滤
@@ -429,17 +430,17 @@ class WanKeYunApi:
                 # 解析单个下载文件信息
                 bok, mediaInfo = self.UrlResolve(oneJob['url'])
                 if bok == False:
-                    LogHelper.logger.warn("AddDownloadTasks: " + oneJob['name'] + ' False.')
+                    self.logger.warn("AddDownloadTasks: " + oneJob['name'] + ' False.')
                     continue
                 taskInfo = mediaInfo['taskInfo']
                 allDownloadFileSize = allDownloadFileSize + int(taskInfo['size'])
                 # 如果解析出来的是 BT 任务，则需要填充一下结构，BT 任务不建议改名
                 if len(mediaInfo.get("infohash")):
                     if 'size' in taskInfo == False:
-                        LogHelper.logger.warn("AddDownloadTasks: " + oneJob['name'] + " Can't Find Size.")
+                        self.logger.warn("AddDownloadTasks: " + oneJob['name'] + " Can't Find Size.")
                         continue
                     if 'name' in taskInfo and taskInfo['name'] == '':
-                        LogHelper.logger.warn("AddDownloadTasks: " + oneJob['name'] + " Cant't Find Name By Url.")
+                        self.logger.warn("AddDownloadTasks: " + oneJob['name'] + " Cant't Find Name By Url.")
                         continue
                     oneJob["filesize"] = taskInfo['size']
                     oneJob['name'] = taskInfo['name']
@@ -449,7 +450,7 @@ class WanKeYunApi:
 
             # 判断下载任务是否超过余量
             if allDownloadFileSize > free2Use:
-                LogHelper.logger.warn("AddDownloadTasks: There's not enough space to download")
+                self.logger.warn("AddDownloadTasks: There's not enough space to download")
                 return False
             # 提交下载任务
             bok, taskResultList = self.CreateTasks(confirmJobList, remoteLocation)
@@ -458,16 +459,16 @@ class WanKeYunApi:
             
             for oneTask in taskResultList['tasks']:
                 if oneTask['msg'] == 'repeat_task':
-                    LogHelper.logger.warn('TaskExsit' + " -- " + oneTask['name'])
+                    self.logger.warn('TaskExsit' + " -- " + oneTask['name'])
                     continue
                 if oneTask['result'] != 0:
-                    LogHelper.logger.warn('result != 0' + " -- " + oneTask['name'])
+                    self.logger.warn('result != 0' + " -- " + oneTask['name'])
                     continue
-                LogHelper.logger.info('AddedTask' + " -- " + oneTask['name'])
+                self.logger.info('AddedTask' + " -- " + oneTask['name'])
 
-            LogHelper.logger.info("AddDownloadTasks Succeed.")
+            self.logger.info("AddDownloadTasks Succeed.")
             return True
         except Exception as error:
-            LogHelper.logger.error("AddDownloadTasks: {0}".format(error))
+            self.logger.error("AddDownloadTasks: {0}".format(error))
         return False
         

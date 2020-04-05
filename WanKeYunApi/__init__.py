@@ -1,27 +1,28 @@
 # -*- coding: utf-8 -*-
 
-import json
-from urllib.parse import urljoin
-
-import requests
-
 from . import Config, CommonUtils
+import requests
+import json
 
 requests.packages.urllib3.disable_warnings()
 
 class WanKeYunApi:
-    requestSession = requests.session()
+    
     user_info = {}
 
     def __init__(self, ilogger, defPath="/onecloud/tddownload"):
         self.nowIP = CommonUtils.rip()
         self.defaultPath = defPath
+        self.initSession()
+        self.logger = ilogger
+
+    def initSession(self):
+        self.requestSession = requests.session()
         self.requestSession.headers = {
             'user-agent': "MineCrafter3/{appVersion} (iPhone; iOS 12.4.1; Scale/3.00)".format(appVersion=Config.appVersion),
             'Proxy-Client-IP' : self.nowIP,
             "cache-control": "no-cache"
         }
-        self.logger = ilogger
     
     def SaveUserInfo(self):
         CommonUtils.SaveUserInfo(self.user_info)
@@ -57,6 +58,9 @@ class WanKeYunApi:
         # 尝试读取一次 Peer 信息，如果失败，那么就重新登陆
         if self.ListPeer() is False:
             self.logger.info("Need ReLogin.")
+            # 重新初始化
+            self.initSession()
+
             if self.Login(user, passwd) is False:
                 return False
 
@@ -79,7 +83,8 @@ class WanKeYunApi:
                 pwd=CommonUtils.Get_Pwd(passwd),
                 account_type='4'
             )
-            result = self.requestSession.post(Config.loginUrl, data=login_data, verify=False)
+
+            result = self.requestSession.post(Config.loginUrl, data=login_data)
             if result.status_code == 200:
                 temp = result.json()
                 if temp.get("iRet") == 0:
@@ -397,7 +402,7 @@ class WanKeYunApi:
     #            "url" : url,
     #       }
     #   注意，这个函数下载的时候默认的是第一个硬盘，usb_info --> ['partitions'][0]
-    def AddDownloadTasks(self, JobList, partitionId=0):
+    def AddDownloadTasks(self, JobList, partitionId=0, needResumeDownloadTask = False):
         try:
             partitionPath = self.user_info["usb_info"][1]['partitions'][partitionId]
             rootPath = partitionPath['path']
@@ -414,13 +419,14 @@ class WanKeYunApi:
                 return False
             # 当玩客云关机再开机的时候，需要恢复为下载完成的任务，也可以操作暂停正在下载的任务
             # 查询下载的任务列表，下载完毕的也在内，需要过滤
-            nowDownloadingList = self.user_info["remote_download_list"]["tasks"]
-            for oneTask in nowDownloadingList:
-                iprogress = int(oneTask["progress"])
-                if iprogress == 10000:
-                    pass
-                else:
-                    self.StartRemoteDl(oneTask["id"])
+            if needResumeDownloadTask == True:
+                nowDownloadingList = self.user_info["remote_download_list"]["tasks"]
+                for oneTask in nowDownloadingList:
+                    iprogress = int(oneTask["progress"])
+                    if iprogress == 10000:
+                        pass
+                    else:
+                        self.StartRemoteDl(oneTask["id"])
             # 确认下载任务
             confirmJobList = []
             # 下载任务的总大小

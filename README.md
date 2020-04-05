@@ -14,6 +14,7 @@
 
 ## Update
 
+* 2020年04月05日，加载缓存导致的登录 Signature error 。
 * 2019年12月26日，根据 github.com/mzeyong/python_onethingcloudApi 的代码进行修复失效部分。
 
 ## How
